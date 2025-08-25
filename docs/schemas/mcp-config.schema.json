@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MCP Configuration Schema",
+  "description": "Schema for Model Context Protocol (MCP) server configurations",
+  "type": "object",
+  "patternProperties": {
+    "^[a-zA-Z][a-zA-Z0-9_-]*$": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/StdioConnection"
+        },
+        {
+          "$ref": "#/definitions/SSEConnection"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "StdioConnection": {
+      "type": "object",
+      "title": "STDIO Connection",
+      "description": "Configuration for STDIO-based MCP server connection",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The command to execute the MCP server",
+          "examples": ["python", "node", "go"]
+        },
+        "args": {
+          "type": "array",
+          "description": "Arguments to pass to the command",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["agent/math_server.py"], ["server.js"]]
+        },
+        "transport": {
+          "type": "string",
+          "enum": ["stdio"],
+          "description": "Transport protocol (must be 'stdio')"
+        }
+      },
+      "required": ["command", "args", "transport"],
+      "additionalProperties": false
+    },
+    "SSEConnection": {
+      "type": "object",
+      "title": "SSE Connection",
+      "description": "Configuration for Server-Sent Events (SSE) based MCP server connection",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL endpoint for the SSE connection",
+          "examples": ["http://localhost:8000/search/events", "https://api.example.com/mcp/events"]
+        },
+        "transport": {
+          "type": "string",
+          "enum": ["sse"],
+          "description": "Transport protocol (must be 'sse')"
+        }
+      },
+      "required": ["url", "transport"],
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "math": {
+        "command": "python",
+        "args": ["agent/math_server.py"],
+        "transport": "stdio"
+      },
+      "search": {
+        "url": "http://localhost:8000/search/events",
+        "transport": "sse"
+      }
+    },
+    {
+      "database": {
+        "command": "node",
+        "args": ["scripts/db_server.js"],
+        "transport": "stdio"
+      },
+      "weather": {
+        "url": "https://api.weather.com/mcp/events",
+        "transport": "sse"
+      }
+    }
+  ]
+}
