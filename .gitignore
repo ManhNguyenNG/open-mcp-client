@@ -45,3 +45,12 @@ next-env.d.ts
 
 # langgraph
 .langgraph_api
+
+# AI Rules and Configuration
+.ai-rules/
+
+# Cursor AI Editor
+.cursor/
+
+# Specifications and Documentation
+docs/

@@ -16,7 +16,7 @@ inclusion: always
 ### UI & Styling
 - **Tailwind CSS 4** : Framework CSS utilitaire
 - **Tailwind CSS Animate** : Animations CSS
-- **Class Variance Authority** : Gestion des variantes de composants
+- **Class Variance Author** : Gestion des variantes de composants
 - **Lucide React** : Icônes modernes
 - **Heroicons** : Icônes SVG
 
@@ -53,6 +53,12 @@ inclusion: always
 - **FastMCP 0.4.1** : Framework pour serveurs MCP
 - **LangChain MCP Adapters 0.0.3** : Adaptateurs MCP pour LangChain
 
+### AWS Integration
+- **Boto3 1.34.0** : SDK AWS pour Python
+- **Botocore 1.34.0** : Bibliothèque de base AWS
+- **AWS Bedrock** : Service de modèles de fondation
+- **Custom Bedrock Client** : Implémentation personnalisée pour éviter les conflits de dépendances
+
 ### Development & Runtime
 - **Uvicorn 0.31.0** : Serveur ASGI
 - **LangGraph CLI 0.1.64** : Outils de ligne de commande
@@ -62,6 +68,7 @@ inclusion: always
 
 ### AI Services
 - **OpenAI API** : Modèles GPT-4o, GPT-4o-mini
+- **AWS Bedrock** : Modèles Claude, Llama, Titan (optionnel)
 - **LangSmith** : Monitoring et observabilité des agents
 
 ### Development Environment
@@ -98,6 +105,14 @@ pnpm run dev-agent      # Démarrage du backend agent uniquement
 - `LANGSMITH_API_KEY` : Clé API LangSmith pour monitoring
 - `AGENT_DEPLOYMENT_URL` : URL du déploiement agent (optionnel)
 
+### Variables d'Environnement Bedrock (Optionnel)
+- `LLM_PROVIDER` : Provider LLM (`openai` ou `bedrock`)
+- `AWS_ACCESS_KEY_ID` : Clé d'accès AWS
+- `AWS_SECRET_ACCESS_KEY` : Clé secrète AWS
+- `AWS_SESSION_TOKEN` : Token de session AWS (optionnel)
+- `AWS_REGION` : Région AWS (défaut: `us-east-1`)
+- `BEDROCK_MODEL_ID` : ID du modèle Bedrock (défaut: `us.anthropic.claude-sonnet-4-20250514-v1:0`)
+
 ### Ports Utilisés
 - **3000** : Frontend Next.js
 - **8123** : Backend LangGraph
@@ -114,3 +129,10 @@ pnpm run dev-agent      # Démarrage du backend agent uniquement
 2. CopilotKit → LangGraph Platform Endpoint
 3. LangGraph → MCP Services via adaptateurs
 4. Retour via la même chaîne avec monitoring LangSmith
+
+### Provider LLM
+- **OpenAI** : Provider par défaut avec GPT-4o
+- **AWS Bedrock** : Provider optionnel avec support streaming et retry/backoff
+- **Sélection** : Via variable d'environnement `LLM_PROVIDER`
+- **Fallback** : OpenAI si Bedrock non configuré ou en erreur
+- **Implémentation** : Client Bedrock personnalisé utilisant boto3 directement

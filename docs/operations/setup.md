@@ -9,7 +9,8 @@
 - **Poetry** : Version 1.7.0+
 
 ### Comptes et API Keys
-- **OpenAI** : Compte avec accès aux modèles GPT-4o
+- **AWS** : Compte AWS avec accès à Bedrock (requis par défaut)
+- **OpenAI** : Compte avec accès aux modèles GPT-4o (optionnel)
 - **LangSmith** : Compte pour le monitoring (optionnel mais recommandé)
 
 ## Installation
@@ -34,7 +35,7 @@ touch .env
 Ajouter les variables d'environnement dans `.env` :
 
 ```env
-# OpenAI API Key (requis)
+# OpenAI API Key (optionnel, si vous voulez utiliser OpenAI)
 OPENAI_API_KEY=sk-your-openai-api-key
 
 # LangSmith API Key (optionnel mais recommandé)
@@ -63,11 +64,69 @@ touch .env
 Ajouter les variables d'environnement dans `agent/.env` :
 
 ```env
-# OpenAI API Key (requis)
-OPENAI_API_KEY=sk-your-openai-api-key
-
 # LangSmith API Key (optionnel mais recommandé)
 LANGSMITH_API_KEY=lsv2-your-langsmith-api-key
+
+# Configuration AWS Bedrock (requis par défaut)
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_SESSION_TOKEN=your-session-token  # Optionnel, pour les rôles temporaires
+
+# Configuration Bedrock (optionnel, valeurs par défaut utilisées)
+AWS_REGION=us-east-1  # Par défaut: us-east-1
+BEDROCK_MODEL_ID=us.anthropic.claude-sonnet-4-20250514-v1:0  # Par défaut
+
+# Paramètres optionnels de tuning
+BEDROCK_MAX_TOKENS=1000
+BEDROCK_TEMPERATURE=0.7
+BEDROCK_TOP_P=0.9
+BEDROCK_STOP=stop1,stop2,stop3  # Séquences d'arrêt séparées par des virgules
+```
+
+## Configuration AWS Bedrock (Par Défaut)
+
+### Prérequis AWS
+- Compte AWS avec accès à Amazon Bedrock
+- Permissions IAM pour Bedrock (ex: `AmazonBedrockFullAccess`)
+- Modèle Bedrock activé dans votre région
+
+### Variables d'Environnement Bedrock
+
+**Bedrock est maintenant le provider par défaut.** Pour utiliser OpenAI à la place, ajoutez :
+
+```env
+# Pour utiliser OpenAI au lieu de Bedrock
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-your-openai-api-key
+```
+
+### Modèles Bedrock Supportés
+
+Le projet supporte les modèles Bedrock suivants :
+- **Anthropic Claude** : `us.anthropic.claude-sonnet-4-20250514-v1:0` (par défaut)
+- **Anthropic Claude 3.5 Sonnet** : `us.anthropic.claude-3-5-sonnet-20241022-v1:0`
+- **Anthropic Claude 3 Haiku** : `us.anthropic.claude-3-haiku-20240307-v1:0`
+- **Meta Llama 3** : `meta.llama3-8b-instruct-v1:0`
+- **Amazon Titan** : `amazon.titan-text-express-v1`
+
+### Configuration des Permissions AWS
+
+Assurez-vous que votre utilisateur/rôle AWS a les permissions suivantes :
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream"
+            ],
+            "Resource": "arn:aws:bedrock:*::foundation-model/*"
+        }
+    ]
+}
 ```
 
 ## Démarrage
@@ -109,6 +168,10 @@ pnpm run dev-agent
 ### 3. Services MCP
 - Vérifier que le serveur mathématique fonctionne
 - Tester une opération simple via l'interface
+
+### 4. Provider LLM
+- **Bedrock** : Provider par défaut, vérifier les logs pour confirmer l'utilisation
+- **OpenAI** : Vérifier que les réponses arrivent normalement (si explicitement configuré)
 
 ## Configuration Avancée
 
@@ -196,6 +259,40 @@ Connection refused to MCP service
 ```
 **Solution :** Vérifier la configuration MCP et les chemins des serveurs
 
+#### 5. Erreurs Bedrock
+
+**Erreur de permissions :**
+```
+Access denied. Please check your AWS credentials and permissions.
+```
+**Solution :** Vérifier les permissions IAM pour Bedrock
+
+**Erreur de throttling :**
+```
+Request rate exceeded. Please wait a moment and try again.
+```
+**Solution :** Le système retry automatiquement. Si persistant, réduire la fréquence des requêtes.
+
+**Erreur de région :**
+```
+Invalid AWS region
+```
+**Solution :** Vérifier que `AWS_REGION` est une région valide et que Bedrock y est disponible.
+
+**Erreur de modèle :**
+```
+Invalid Bedrock model ID
+```
+**Solution :** Vérifier que le modèle est activé dans votre compte AWS et région.
+
+#### 6. Erreurs OpenAI (si utilisé)
+
+**Erreur de clé API :**
+```
+OpenAI configuration error: Invalid API key
+```
+**Solution :** Vérifier que `OPENAI_API_KEY` est correcte et que `LLM_PROVIDER=openai` est défini
+
 ### Logs et Debugging
 
 #### Frontend
@@ -218,7 +315,8 @@ poetry run langgraph dev --host localhost --port 8123 --verbose
 
 ## Prochaines Étapes
 
-1. **Explorer l'interface** : Tester les fonctionnalités de base
-2. **Configurer des services MCP** : Ajouter des services personnalisés
-3. **Personnaliser l'agent** : Modifier les instructions et comportements
-4. **Déployer en production** : Suivre le guide de déploiement
+1. **Configurer AWS Bedrock** : Activer Bedrock dans votre compte AWS
+2. **Explorer l'interface** : Tester les fonctionnalités de base
+3. **Configurer des services MCP** : Ajouter des services personnalisés
+4. **Personnaliser l'agent** : Modifier les instructions et comportements
+5. **Déployer en production** : Suivre le guide de déploiement

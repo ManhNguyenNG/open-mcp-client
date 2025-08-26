@@ -32,7 +32,7 @@ export default function RootLayout({
         <CopilotKit
           runtimeUrl="/api/copilotkit"
           // agent="sample_agent"
-          showDevConsole={false}
+          showDevConsole={true}
         >
           {children}
         </CopilotKit>

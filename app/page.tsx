@@ -1,89 +1,64 @@
 "use client";
 
+import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
-import { CopilotActionHandler } from "./components/CopilotActionHandler";
-import { CopilotKitCSSProperties } from "@copilotkit/react-ui";
-import { MCPConfigForm } from "./components/MCPConfigForm";
-import { useState } from "react";
-import SpreadsheetRenderer from "./components/SpreadsheetRenderer";
-import { INSTRUCTIONS } from "./instructions";
+import MCPServerManager from "./components/MCPServerManager";
 
 export default function Home() {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [showSpreadsheet, setShowSpreadsheet] = useState(false);
-
   return (
-    <div className="min-h-screen bg-gray-50 flex relative">
-      {/* Client component that sets up the Copilot action handler */}
-      <CopilotActionHandler />
-
-      {/* Main content area */}
-      <div className="flex-1 p-4 md:p-8 lg:mr-[30vw]">
-        <MCPConfigForm showSpreadsheet={showSpreadsheet}
-          setShowSpreadsheet={setShowSpreadsheet} />
-        {showSpreadsheet && <SpreadsheetRenderer />}
-      </div>
-      {/* Mobile chat toggle button */}
-      <button
-        onClick={() => setIsChatOpen(!isChatOpen)}
-        className="fixed bottom-4 right-4 z-50 p-3 bg-gray-800 text-white rounded-full shadow-lg lg:hidden hover:bg-gray-700"
-        aria-label="Toggle chat"
-      >
-        {isChatOpen ? (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Gestionnaire MCP */}
+          <div className="lg:col-span-1">
+            <MCPServerManager 
+              onServerConnected={(server) => {
+                console.log(`MCP Server connected: ${server.name}`);
+              }}
+              onServerDisconnected={(serverName) => {
+                console.log(`MCP Server disconnected: ${serverName}`);
+              }}
             />
-          </svg>
-        ) : (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
-        )}
-      </button>
-
-      {/* Fixed sidebar - hidden on mobile, shown on larger screens */}
-      <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[80vw] lg:w-[30vw] border-l bg-white shadow-md transition-transform duration-300 ${
-          isChatOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-        }`}
-        style={
-          {
-            "--copilot-kit-primary-color": "#4F4F4F",
-          } as CopilotKitCSSProperties
-        }
-      >
-        <CopilotChat
-          className="h-full flex flex-col"
-          // instructions={
-          //   "You are assisting the user as best as you can. Answer in the best way possible given the data you have."
-          // }
-          instructions={INSTRUCTIONS}
-          labels={{
-            title: "MCP Assistant",
-            initial: "Need any help?",
-          }}
-        />
+          </div>
+          
+          {/* Chat Interface */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-md h-[600px]">
+              <CopilotChat
+                api="/api/copilotkit"
+                placeholder="Ask me anything! I can help with calculations, conversions, scientific analysis, and statistics using MCP servers..."
+                showAvatar={true}
+                showAvatarInMessages={true}
+                showCodeBlockActions={true}
+                showCopyButton={true}
+                showMarkdownAsHTML={true}
+                showStopGenerating={true}
+                showSuggestedQuestions={true}
+                suggestedQuestions={[
+                  // Math questions
+                  "What make 5 + 12 ?",
+                  "Calculate 4 * 7",
+                  "Combien font 2 * 6 ?",
+                  
+                  // Conversion questions
+                  "25°C en Fahrenheit",
+                  "100 mètres en pieds",
+                  "10 km en miles",
+                  
+                  // Scientific questions
+                  "Racine carrée de 16",
+                  "5 puissance 3",
+                  "5!",
+                  
+                  // Statistics questions
+                  "Moyenne de 1,2,3,4,5",
+                  "Écart-type de 10,20,30",
+                  "Statistiques de 1,2,3,4,5,6,7,8,9,10"
+                ]}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
